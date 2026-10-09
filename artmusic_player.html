@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>베이비올 명화음악 플레이어 & 갤러리</title>
+  <style>
+    :root {
+      --primary: #5c6bc0;
+      --primary-dark: #3949ab;
+      --bg: #f5f7fb;
+      --card-bg: #ffffff;
+      --text: #2c3e50;
+      --text-muted: #7f8c8d;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Pretendard", "Noto Sans KR", "Segoe UI", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+      padding: 20px;
+    }
+    .container {
+      width: 100%;
+      max-width: 800px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+    header {
+      text-align: center;
+      margin-bottom: 5px;
+    }
+    header h1 {
+      font-size: 1.6rem;
+      color: var(--primary-dark);
+      margin-bottom: 6px;
+    }
+    header p {
+      font-size: 0.95rem;
+      color: var(--text-muted);
+    }
+    .tabs {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+    }
+    .tab-btn {
+      padding: 10px 18px;
+      border: none;
+      background: #e2e8f0;
+      color: #4a5568;
+      border-radius: 20px;
+      font-weight: 600;
+      font-size: 0.95rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .tab-btn.active {
+      background: var(--primary);
+      color: #fff;
+      box-shadow: 0 4px 12px rgba(92, 107, 192, 0.35);
+    }
+    .player-card {
+      background: var(--card-bg);
+      border-radius: 16px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+    .art-container {
+      position: relative;
+      width: 100%;
+      height: 380px;
+      background: #1a202c;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+    .art-container img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      transition: transform 0.3s ease;
+    }
+    .info-bar {
+      padding: 18px 24px;
+      border-bottom: 1px solid #edf2f7;
+    }
+    .track-title {
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: #1a202c;
+      margin-bottom: 4px;
+    }
+    .track-sub {
+      font-size: 0.95rem;
+      color: var(--text-muted);
+    }
+    .controls {
+      padding: 16px 24px 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+    audio {
+      width: 100%;
+      border-radius: 8px;
+      outline: none;
+    }
+    .tracklist {
+      background: var(--card-bg);
+      border-radius: 16px;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05);
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .tracklist-title {
+      font-size: 1rem;
+      font-weight: 700;
+      color: #2d3748;
+      padding: 4px 8px 8px;
+    }
+    .track-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 14px;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: background 0.15s ease;
+    }
+    .track-item:hover {
+      background: #f1f5f9;
+    }
+    .track-item.playing {
+      background: #eef2ff;
+      border-left: 4px solid var(--primary);
+    }
+    .track-item-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .track-num {
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: var(--primary);
+      min-width: 24px;
+    }
+    .track-names {
+      display: flex;
+      flex-direction: column;
+    }
+    .track-name {
+      font-size: 0.98rem;
+      font-weight: 600;
+    }
+    .track-desc {
+      font-size: 0.82rem;
+      color: var(--text-muted);
+    }
+    .badge {
+      font-size: 0.75rem;
+      padding: 4px 8px;
+      background: #edf2f7;
+      color: #4a5568;
+      border-radius: 12px;
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <header>
+    <h1>🎨 베이비올 명화음악 플레이어</h1>
+    <p>아람북스 명화 갤러리북 12곡 전곡 스트리밍 & 원작 명화 감상</p>
+  </header>
+
+  <div class="tabs">
+    <button class="tab-btn active" onclick="switchBook(0)">1권. 오감 톡톡 (3곡)</button>
+    <button class="tab-btn" onclick="switchBook(1)">2권. 이야기 쏙쏙 (5곡)</button>
+    <button class="tab-btn" onclick="switchBook(2)">3권. 생각 통통 (4곡)</button>
+  </div>
+
+  <div class="player-card">
+    <div class="art-container">
+      <img id="currentArt" src="http://qr.arambooks.com/QR/artmusic/image/music01_01.jpg" alt="명화">
+    </div>
+    <div class="info-bar">
+      <div class="track-title" id="currentTitle">강아지 왈츠</div>
+      <div class="track-sub" id="currentSub">쇼팽 · 명화: 에드윈 랜시어 <판사와 배심원들></div>
+    </div>
+    <div class="controls">
+      <audio id="audioPlayer" controls autoplay src="http://qr.arambooks.com/QR/artmusic/mp3/music01_01.mp3"></audio>
+    </div>
+  </div>
+
+  <div class="tracklist">
+    <div class="tracklist-title" id="listTitle">1권 수록곡 목록</div>
+    <div id="itemsContainer"></div>
+  </div>
+</div>
+
+<script>
+const books = [
+  {
+    name: "1권: 오감 톡톡",
+    tracks: [
+      {
+        id: "music01_01",
+        title: "강아지 왈츠",
+        composer: "쇼팽 (Chopin)",
+        artist: "에드윈 랜시어 - 판사와 배심원들",
+        mp3: "http://qr.arambooks.com/QR/artmusic/mp3/music01_01.mp3",
+        art: "http://qr.arambooks.com/QR/artmusic/image/music01_01.jpg"
+      },
+      {
+        id: "music01_02",
+        title: "캉캉",
+        composer: "오펜바흐 (천국과 지옥 중)",
+        artist: "조르주 쇠라 - 샤위 춤 (Le Chahut)",
+        mp3: "http://qr.arambooks.com/QR/artmusic/mp3/music01_02.mp3",
+        art: "http://qr.arambooks.com/QR/artmusic/image/music01_02.jpg"
+      },
+      {
+        id: "music01_03",
+        title: "꽃의 왈츠",
+        composer: "차이콥스키 (호두까기 인형 중)",
+        artist: "오귀스트 르누아르 - 화병의 장미",
+        mp3: "http://qr.arambooks.com/QR/artmusic/mp3/music01_03.mp3",
+        art: "http://qr.arambooks.com/QR/artmusic/image/music01_03.jpg"
+      }
+    ]
+  },
+  {
+    name: "2권: 이야기 쏙쏙",
+    tracks: [
+      {
+        id: "music02_01",
+        title: "월광 소나타",
+        composer: "베토벤 (Beethoven)",
+        artist: "에드가 드가 - 무대 위의 무용수 (스타)",
+        mp3: "http://qr.arambooks.com/QR/artmusic/mp3/music02_01.mp3",
+        art: "http://qr.arambooks.com/QR/artmusic/image/music02_01.jpg"
+      },
+      {
+        id: "music02_02",
+        title: "사랑의 묘약",
+        composer: "도니제티 (Donizetti)",
+        artist: "에밀 무니에르 - 다정한 순간",
+        mp3: "http://qr.arambooks.com/QR/artmusic/mp3/music02_02.mp3",
+        art: "http://qr.arambooks.com/QR/artmusic/image/music02_02.jpg"
+      },
+      {
+        id: "music02_03",
+        title: "트로이메라이",
+        composer: "슈만 (어린이의 정경 중)",
+        artist: "파울 클레 - 세네시오 (Senecio)",
+        mp3: "http://qr.arambooks.com/QR/artmusic/mp3/music02_03.mp3",
+        art: "http://qr.arambooks.com/QR/artmusic/image/music02_03.jpg"
+      },
+      {
+        id: "music02_04",
+        title: "모차르트 자장가",
+        composer: "모차르트 / 플리스",
+        artist: "잠든 아기 (Sleeping Infant)",
+        mp3: "http://qr.arambooks.com/QR/artmusic/mp3/music02_04.mp3",
+        art: "http://qr.arambooks.com/QR/artmusic/image/music02_04.jpg"
+      },
+      {
+        id: "music02_05",
+        title: "사랑의 인사",
+        composer: "엘가 (Elgar)",
+        artist: "메리 카사트 - 뱃놀이 파티",
+        mp3: "http://qr.arambooks.com/QR/artmusic/mp3/music02_05.mp3",
+        art: "http://qr.arambooks.com/QR/artmusic/image/music02_05.jpg"
+      }
+    ]
+  },
+  {
+    name: "3권: 생각 통통",
+    tracks: [
+      {
+        id: "music03_01",
+        title: "아름답고 푸른 도나우강",
+        composer: "요한 슈트라우스 2세",
+        artist: "빈센트 반 고흐 - 센 강의 둑",
+        mp3: "http://qr.arambooks.com/QR/artmusic/mp3/music03_01.mp3",
+        art: "http://qr.arambooks.com/QR/artmusic/image/music03_01.jpg"
+      },
+      {
+        id: "music03_02",
+        title: "파랑돌",
+        composer: "비제 (아를의 여인 중)",
+        artist: "앙리 마티스 - 말, 여기수와 광대",
+        mp3: "http://qr.arambooks.com/QR/artmusic/mp3/music03_02.mp3",
+        art: "http://qr.arambooks.com/QR/artmusic/image/music03_02.jpg"
+      },
+      {
+        id: "music03_03",
+        title: "라데츠키 행진곡",
+        composer: "요한 슈트라우스 1세",
+        artist: "헨리 레이번 - 스케이트 타는 목사님",
+        mp3: "http://qr.arambooks.com/QR/artmusic/mp3/music03_03.mp3",
+        art: "http://qr.arambooks.com/QR/artmusic/image/music03_03.jpg"
+      },
+      {
+        id: "music03_04",
+        title: "밤의 여왕의 아리아",
+        composer: "모차르트 (마술피리 중)",
+        artist: "보리스 쿠스토디예프 - 상인의 아내",
+        mp3: "http://qr.arambooks.com/QR/artmusic/mp3/music03_04.mp3",
+        art: "http://qr.arambooks.com/QR/artmusic/image/music03_04.jpg"
+      }
+    ]
+  }
+];
+
+let currentBookIdx = 0;
+let currentTrackIdx = 0;
+
+const audioPlayer = document.getElementById('audioPlayer');
+const currentArt = document.getElementById('currentArt');
+const currentTitle = document.getElementById('currentTitle');
+const currentSub = document.getElementById('currentSub');
+const listTitle = document.getElementById('listTitle');
+const itemsContainer = document.getElementById('itemsContainer');
+const tabBtns = document.querySelectorAll('.tab-btn');
+
+function renderList() {
+  const currentBook = books[currentBookIdx];
+  listTitle.innerText = `${currentBook.name} 수록곡 목록`;
+  itemsContainer.innerHTML = '';
+  
+  currentBook.tracks.forEach((track, idx) => {
+    const item = document.createElement('div');
+    item.className = `track-item ${idx === currentTrackIdx ? 'playing' : ''}`;
+    item.onclick = () => selectTrack(idx);
+    
+    item.innerHTML = `
+      <div class="track-item-left">
+        <span class="track-num">${String(idx + 1).padStart(2, '0')}</span>
+        <div class="track-names">
+          <span class="track-name">${track.title}</span>
+          <span class="track-desc">${track.composer} · ${track.artist}</span>
+        </div>
+      </div>
+      <span class="badge">재생</span>
+    `;
+    itemsContainer.appendChild(item);
+  });
+}
+
+function selectTrack(trackIdx) {
+  currentTrackIdx = trackIdx;
+  const track = books[currentBookIdx].tracks[trackIdx];
+  currentArt.src = track.art;
+  currentTitle.innerText = track.title;
+  currentSub.innerText = `${track.composer} · 명화: ${track.artist}`;
+  audioPlayer.src = track.mp3;
+  audioPlayer.play();
+  renderList();
+}
+
+function switchBook(bookIdx) {
+  currentBookIdx = bookIdx;
+  currentTrackIdx = 0;
+  tabBtns.forEach((btn, i) => {
+    btn.classList.toggle('active', i === bookIdx);
+  });
+  selectTrack(0);
+}
+
+// 자동 다음 곡 재생
+audioPlayer.onended = () => {
+  const currentBook = books[currentBookIdx];
+  if (currentTrackIdx + 1 < currentBook.tracks.length) {
+    selectTrack(currentTrackIdx + 1);
+  } else {
+    // 다음 책으로 넘어가기
+    const nextBook = (currentBookIdx + 1) % books.length;
+    switchBook(nextBook);
+  }
+};
+
+renderList();
+</script>
+</body>
+</html>
